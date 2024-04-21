@@ -1,0 +1,78 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-cluster-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: example-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: example-ca
+  secretName: root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: my-ca
+spec:
+  ca:
+    secretName: root-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-cluster-clients-ca-cert-tls
+  namespace: kafka
+spec:
+  isCA: true
+  commonName: my-cluster-clients-ca-cert-tls
+  secretName: my-cluster-clients-ca-cert-tls
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: my-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
+  secretTemplate:
+    annotations:
+      sebastian.gaiser.bayern/tls-strimzi-ca: "reconcile"
+      sebastian.gaiser.bayern/target-cluster-name: "my-cluster"
+      sebastian.gaiser.bayern/target-secret-name: "my-cluster-clients-ca-cert"
+      sebastian.gaiser.bayern/target-secret-key-name: "my-cluster-clients-ca"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-cluster-cluster-ca-cert-tls
+  namespace: kafka
+spec:
+  isCA: true
+  commonName: my-cluster-cluster-ca-cert-tls
+  secretName: my-cluster-cluster-ca-cert-tls
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: my-ca
+  secretTemplate:
+    annotations:
+      sebastian.gaiser.bayern/tls-strimzi-ca: "reconcile"
+      sebastian.gaiser.bayern/target-cluster-name: "my-cluster"
+      sebastian.gaiser.bayern/target-secret-name: "my-cluster-cluster-ca-cert"
+      sebastian.gaiser.bayern/target-secret-key-name: "my-cluster-cluster-ca"
