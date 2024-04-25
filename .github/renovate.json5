@@ -1,0 +1,15 @@
+{
+  commitBody: "Signed-off-by: Sebastian Gaiser <sebastiangaiser@users.noreply.github.com>",
+  enabled: true,
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  labels: ["renovate"],
+  extends: [
+    "config:base"
+  ],
+  "pre-commit": {
+    enabled: true
+  },
+  rebaseWhen: "conflicted",
+  semanticCommits: "enabled",
+  timezone: "Europe/Berlin"
+}
