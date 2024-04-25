@@ -2,7 +2,17 @@ apiVersion: v1
 entries:
   ca-controller-for-strimzi:
   - apiVersion: v2
-    created: "2024-04-25T20:08:09.2773118Z"
+    created: "2024-04-25T20:09:02.015393745Z"
+    digest: 8073653922a43c47198d05a3ecade84d684936f2c15a152e2a5721b8104fae2a
+    maintainers:
+    - name: sebastiangaiser
+    name: ca-controller-for-strimzi
+    type: application
+    urls:
+    - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    created: "2024-04-25T20:09:02.01514433Z"
     digest: d708b221e07010cef0c1613f1b08371be06d9c4aade4ec67aa403541f12747c3
     maintainers:
     - name: sebastiangaiser
@@ -11,4 +21,4 @@ entries:
     urls:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.0.tgz
     version: 0.1.0
-generated: "2024-04-25T20:08:09.27648115Z"
+generated: "2024-04-25T20:09:02.014260686Z"
