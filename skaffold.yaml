@@ -1,0 +1,22 @@
+---
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: ca-controller-for-strimzi
+build:
+  artifacts:
+    - image: ghcr.io/sebastiangaiser/ca-controller-for-strimzi
+      docker:
+        dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
+  local:
+    useBuildkit: true
+#deploy:
+#  helm:
+#    releases:
+#      - name: ca-controller-for-strimzi
+#        chartPath: chart
+#        valuesFiles:
+#          - chart/values.yaml
