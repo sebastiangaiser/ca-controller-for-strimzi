@@ -32,6 +32,7 @@ jobs:
         uses: hiberbee/github-action-skaffold@1.27.0
         with:
           skaffold-version: 2.11.1
+          kubectl-version: 1.30
           command: build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
