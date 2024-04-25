@@ -126,8 +126,6 @@ type Reconciler struct {
 }
 
 func (r *Reconciler) SetupWithManager(mgr ctrlRuntime.Manager) error {
-	// TODO check if needed
-
 	return ctrlRuntime.
 		NewControllerManagedBy(mgr).
 		For(&corev1.Secret{}, builder.WithPredicates(predicate.ResourceVersionChangedPredicate{})).
@@ -202,7 +200,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	// process tlsSecretHash for comparison with target secrets label
 	tlsSecretHashRaw := sha256.Sum256([]byte(string(tlsSecret.Data["ca.crt"]) + string(tlsSecret.Data["tls.crt"]) + string(tlsSecret.Data["tls.key"])))
 	tlsSecretHash := truncateString(hex.EncodeToString(tlsSecretHashRaw[:]), 63)
-	ctrlRuntime.Log.Info("Processed hash: " + tlsSecretHash)
 
 	// TODO export to function
 	err = r.client.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: tlsSecretAnnotations[targetSecretAnnotationNameKey]}, targetSecret)
