@@ -11,3 +11,11 @@ controller can be used...
 
 Please check the `examples/example-ca.yaml` how to use the controller after deploying it and using it with cert-manager but
 it also works with normal Kubernetes secrets of type TLS.
+
+## Install the controller
+
+```shell
+helm repo add sebastiangaiser-ca-controller-for-strimzi https://sebastiangaiser.github.io/ca-controller-for-strimzi
+helm repo update
+helm upgrade --install -n kafka ca-controller-for-strimzi sebastiangaiser-ca-controller-for-strimzi/ca-controller-for-strimzi
+```
