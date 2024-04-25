@@ -2,7 +2,17 @@ apiVersion: v1
 entries:
   ca-controller-for-strimzi:
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.61809696Z"
+    created: "2024-04-25T21:35:19.092946254Z"
+    digest: 40d5db9c3cf5d7d9fd5ce79cd70378c50a74795d4a836b294a5def0c82b31424
+    maintainers:
+    - name: sebastiangaiser
+    name: ca-controller-for-strimzi
+    type: application
+    urls:
+    - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
+    created: "2024-04-25T21:35:19.092728508Z"
     digest: dcaef2ef16ee863325a380487790e06b70b88ae2febb338b632c2ba67a1aaf96
     maintainers:
     - name: sebastiangaiser
@@ -12,7 +22,7 @@ entries:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.5.tgz
     version: 0.1.5
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.617873133Z"
+    created: "2024-04-25T21:35:19.092508459Z"
     digest: e1644d1e321b2f3454d5dbc58d0a6b5252d9939d019619c264e92d4d0491f5c3
     maintainers:
     - name: sebastiangaiser
@@ -22,7 +32,7 @@ entries:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.4.tgz
     version: 0.1.4
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.617639947Z"
+    created: "2024-04-25T21:35:19.092281085Z"
     digest: e166a6b33905deb07273e510abc0adbe84f48b13d8720bd7a3a0e4d47502b270
     maintainers:
     - name: sebastiangaiser
@@ -32,7 +42,7 @@ entries:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.3.tgz
     version: 0.1.3
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.617373159Z"
+    created: "2024-04-25T21:35:19.092037873Z"
     digest: c63cfd4c193c0d359298140e7388bda3657fbaf103c961a5e6c2c22afc321b0c
     maintainers:
     - name: sebastiangaiser
@@ -42,7 +52,7 @@ entries:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.2.tgz
     version: 0.1.2
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.617114226Z"
+    created: "2024-04-25T21:35:19.091782488Z"
     digest: 8073653922a43c47198d05a3ecade84d684936f2c15a152e2a5721b8104fae2a
     maintainers:
     - name: sebastiangaiser
@@ -52,7 +62,7 @@ entries:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.1.tgz
     version: 0.1.1
   - apiVersion: v2
-    created: "2024-04-25T21:25:55.616846616Z"
+    created: "2024-04-25T21:35:19.091528335Z"
     digest: d708b221e07010cef0c1613f1b08371be06d9c4aade4ec67aa403541f12747c3
     maintainers:
     - name: sebastiangaiser
@@ -61,4 +71,4 @@ entries:
     urls:
     - https://sebastiangaiser.github.io/ca-controller-for-strimzi/ca-controller-for-strimzi-0.1.0.tgz
     version: 0.1.0
-generated: "2024-04-25T21:25:55.615241533Z"
+generated: "2024-04-25T21:35:19.090674926Z"
