@@ -32,7 +32,7 @@ jobs:
         uses: hiberbee/github-action-skaffold@1.27.0
         with:
           skaffold-version: 2.11.1
-          container-structure-test-version: 1.17.0
+          container-structure-test-version: 1.16.1
           kubectl-version: 1.29.4
           command: build
         env:
