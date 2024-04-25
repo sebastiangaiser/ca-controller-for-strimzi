@@ -1,0 +1,14 @@
+{{- if .Values.rbac.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "ca-controller-for-strimzi.fullname" . }}
+  labels:
+    {{- include "ca-controller-for-strimzi.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "secrets" ]
+    # "delete" not needed until the controller does cleanup, too
+    verbs: [ "get", "list", "watch", "create", "update", "patch" ]
+{{- end -}}

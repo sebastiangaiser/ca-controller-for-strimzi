@@ -1,4 +1,8 @@
-.github
-README.md
-LICENSE
+.github/
+chart/
+examples
 .editorconfig
+.gitignore
+LICENSE
+README.md
+skaffold.yaml

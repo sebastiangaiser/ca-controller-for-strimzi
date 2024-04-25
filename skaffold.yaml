@@ -13,10 +13,10 @@ build:
         - linux/arm64
   local:
     useBuildkit: true
-#deploy:
-#  helm:
-#    releases:
-#      - name: ca-controller-for-strimzi
-#        chartPath: chart
-#        valuesFiles:
-#          - chart/values.yaml
+deploy:
+  helm:
+    releases:
+      - name: ca-controller-for-strimzi
+        chartPath: chart
+        valuesFiles:
+          - chart/values.yaml

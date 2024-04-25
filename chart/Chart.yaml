@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ca-controller-for-strimzi
+type: application
+version: 0.0.0
+maintainers:
+  - name: sebastiangaiser

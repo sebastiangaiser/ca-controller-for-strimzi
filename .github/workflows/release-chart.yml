@@ -1,0 +1,29 @@
+name: Release Chart
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+      - name: Release chart
+        env:
+          TAG: "${{ github.ref_name}}"
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git worktree add chart/repo gh-pages
+          helm package chart --version "${{ github.ref_name}}" -d chart/repo
+          cd chart/repo
+          helm repo index . --url=https://sebastiangaiser.github.io/ca-controller-for-strimzi/
+          git add .
+          git commit -m "$TAG"
+          git push

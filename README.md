@@ -9,5 +9,5 @@ Strimzi requires the CA key split from the rest of a Kubernetes secret of type T
 To avoid doing this manually e.g. when using [cert-manager](https://cert-manager.io/) for managing the CAs, this
 controller can be used...
 
-Please check the `example-ca.yaml` how to use the controller after deploying it and using it with cert-manager but
+Please check the `examples/example-ca.yaml` how to use the controller after deploying it and using it with cert-manager but
 it also works with normal Kubernetes secrets of type TLS.
