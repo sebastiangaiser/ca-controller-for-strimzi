@@ -33,7 +33,7 @@ jobs:
         with:
           skaffold-version: 2.11.1
           container-structure-test-version: 1.17.0
-          kubectl-version: 1.30.0
+          kubectl-version: 1.29.4
           command: build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
