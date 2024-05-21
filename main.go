@@ -188,6 +188,11 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		}
 	}
 
+	caCrt := string(tlsSecret.Data["ca.crt"])
+	tlsCrt := string(tlsSecret.Data["tls.crt"])
+	tlsKey := string(tlsSecret.Data["tls.key"])
+	combinedCrt := tlsCrt + caCrt
+
 	// check if target secrets are existing
 	targetSecret := &corev1.Secret{}
 	targetSecretExists := false
@@ -197,7 +202,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	targetSecretKeyNeedsUpdate := false
 
 	// process tlsSecretHash for comparison with target secrets label
-	tlsSecretHashRaw := sha256.Sum256([]byte(string(tlsSecret.Data["ca.crt"]) + string(tlsSecret.Data["tls.crt"]) + string(tlsSecret.Data["tls.key"])))
+	tlsSecretHashRaw := sha256.Sum256([]byte(combinedCrt + tlsKey))
 	tlsSecretHash := truncateString(hex.EncodeToString(tlsSecretHashRaw[:]), 63)
 
 	// TODO export to function
@@ -239,11 +244,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		ctrlRuntime.Log.Info("All target secrets are up-to-date")
 		return ctrlRuntime.Result{}, nil
 	}
-
-	caCrt := string(tlsSecret.Data["ca.crt"])
-	tlsCrt := string(tlsSecret.Data["tls.crt"])
-	tlsKey := string(tlsSecret.Data["tls.key"])
-	combinedCrt := tlsCrt + caCrt
 
 	clusterName := tlsSecretAnnotations[targetClusterNameKey]
 
