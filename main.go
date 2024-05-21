@@ -41,7 +41,6 @@ var (
 	targetClusterNameValue                 = ""
 	targetSecretAnnotationNameKey          = "sebastian.gaiser.bayern/target-secret-name"
 	targetSecretAnnotationKeyNameKey       = "sebastian.gaiser.bayern/target-secret-key-name"
-	targetSecretAnnotationNameDefaultValue = ""
 	strimziClusterLabel                    = "strimzi.io/cluster"
 	strimziKindLabel                       = "strimzi.io/kind"
 	strimziKindValue                       = "Kafka"
@@ -152,7 +151,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		return ctrlRuntime.Result{}, nil
 	}
 	if value, exists := tlsSecretAnnotations[reconcileAnnotationKey]; !exists {
-		ctrlRuntime.Log.Info(fmt.Sprintf("Not matching secret with name: %s", tlsSecret.Name))
+		ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name '%s' should be reconciled but is missing annotation '%s'", tlsSecret.Name, reconcileAnnotationKey))
 		return ctrlRuntime.Result{}, nil
 	} else {
 		if value != reconcileAnnotationValue {
@@ -168,7 +167,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name '%s' should be reconciled but is missing annotation '%s'", tlsSecret.Name, targetSecretAnnotationNameKey))
 		return ctrlRuntime.Result{}, nil
 	} else {
-		if value == targetSecretAnnotationNameDefaultValue {
+		if value == "" {
 			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but the target secret name annotation value is empty...")
 			return ctrlRuntime.Result{}, nil
 		} else {
@@ -181,7 +180,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but is missing annotation: " + targetSecretAnnotationKeyNameKey)
 		return ctrlRuntime.Result{}, nil
 	} else {
-		if value == targetSecretAnnotationNameDefaultValue {
+		if value == "" {
 			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but the target secret name key annotation value is empty...")
 			return ctrlRuntime.Result{}, nil
 		} else {
