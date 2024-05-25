@@ -29,23 +29,22 @@ import (
 )
 
 var (
-	globalName                             = "ca-controller-for-strimzi"
-	scheme                                 = runtime.NewScheme()
-	log                                    = ctrlRuntime.Log.WithName(globalName)
-	reconcileAnnotationKey                 = "sebastian.gaiser.bayern/tls-strimzi-ca"
-	reconcileAnnotationValue               = "reconcile"
-	managedByLabelKey                      = "sebastian.gaiser.bayern/managed-by"
-	hashLabelKey                           = "sebastian.gaiser.bayern/hash"
-	managedByLabelValue                    = "ca-controller-for-strimzi"
-	targetClusterNameKey                   = "sebastian.gaiser.bayern/target-cluster-name"
-	targetClusterNameValue                 = ""
-	targetSecretAnnotationNameKey          = "sebastian.gaiser.bayern/target-secret-name"
-	targetSecretAnnotationKeyNameKey       = "sebastian.gaiser.bayern/target-secret-key-name"
-	strimziClusterLabel                    = "strimzi.io/cluster"
-	strimziKindLabel                       = "strimzi.io/kind"
-	strimziKindValue                       = "Kafka"
-	strimziCaCertGeneration                = "strimzi.io/ca-cert-generation"
-	strimziCaKeyGeneration                 = "strimzi.io/ca-key-generation"
+	globalName                       = "ca-controller-for-strimzi"
+	scheme                           = runtime.NewScheme()
+	log                              = ctrlRuntime.Log.WithName(globalName)
+	reconcileAnnotationKey           = "sebastian.gaiser.bayern/tls-strimzi-ca"
+	reconcileAnnotationValue         = "reconcile"
+	managedByLabelKey                = "sebastian.gaiser.bayern/managed-by"
+	hashLabelKey                     = "sebastian.gaiser.bayern/hash"
+	managedByLabelValue              = "ca-controller-for-strimzi"
+	targetClusterNameKey             = "sebastian.gaiser.bayern/target-cluster-name"
+	targetSecretAnnotationNameKey    = "sebastian.gaiser.bayern/target-secret-name"
+	targetSecretAnnotationKeyNameKey = "sebastian.gaiser.bayern/target-secret-key-name"
+	strimziClusterLabel              = "strimzi.io/cluster"
+	strimziKindLabel                 = "strimzi.io/kind"
+	strimziKindValue                 = "Kafka"
+	strimziCaCertGeneration          = "strimzi.io/ca-cert-generation"
+	strimziCaKeyGeneration           = "strimzi.io/ca-key-generation"
 )
 
 func init() {
@@ -168,23 +167,23 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		return ctrlRuntime.Result{}, nil
 	} else {
 		if value == "" {
-			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but the target secret name annotation value is empty...")
+			ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name: %s should be reconciled but the target secret name annotation value is empty...", tlsSecret.Name))
 			return ctrlRuntime.Result{}, nil
 		} else {
-			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " will get reconciled with target secret name: " + tlsSecretAnnotations[targetSecretAnnotationNameKey])
+			ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name: %s will get reconciled with target secret name: %s", tlsSecret.Name, tlsSecretAnnotations[targetSecretAnnotationNameKey]))
 		}
 	}
 
 	// verify targetSecretAnnotationKeyNameKey is set
 	if value, exists := tlsSecretAnnotations[targetSecretAnnotationKeyNameKey]; !exists {
-		ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but is missing annotation: " + targetSecretAnnotationKeyNameKey)
+		ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name: %s should be reconciled but is missing annotation: %s", tlsSecret.Name, targetSecretAnnotationKeyNameKey))
 		return ctrlRuntime.Result{}, nil
 	} else {
 		if value == "" {
-			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " should be reconciled but the target secret name key annotation value is empty...")
+			ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name: %s should be reconciled but the target secret name key annotation value is empty...", tlsSecret.Name))
 			return ctrlRuntime.Result{}, nil
 		} else {
-			ctrlRuntime.Log.Info("Secret with name: " + tlsSecret.Name + " will get reconciled with target secret name: " + tlsSecretAnnotations[targetSecretAnnotationKeyNameKey])
+			ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name: %s will get reconciled with target secret name: %s", tlsSecret.Name, tlsSecretAnnotations[targetSecretAnnotationKeyNameKey]))
 		}
 	}
 
