@@ -11,9 +11,6 @@ build:
       platforms:
         - linux/amd64
         - linux/arm64
-  tagPolicy:
-    gitCommit:
-      ignoreChanges: true
   local:
     useBuildkit: true
 deploy:
