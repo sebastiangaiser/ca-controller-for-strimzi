@@ -1,5 +1,5 @@
 ---
-apiVersion: skaffold/v4beta10
+apiVersion: skaffold/v4beta6
 kind: Config
 metadata:
   name: ca-controller-for-strimzi
@@ -11,6 +11,9 @@ build:
       platforms:
         - linux/amd64
         - linux/arm64
+  tagPolicy:
+    gitCommit:
+      ignoreChanges: true
   local:
     useBuildkit: true
 deploy:
