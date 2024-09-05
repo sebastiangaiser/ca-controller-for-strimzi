@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/onsi/ginkgo/v2 v2.20.2
-	github.com/prometheus/client_golang v1.20.2
+	github.com/prometheus/client_golang v1.20.3
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
