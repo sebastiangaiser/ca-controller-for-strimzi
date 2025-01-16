@@ -15,10 +15,10 @@ spec:
       labels:
         {{- include "ca-controller-for-strimzi.selectorLabels" . | nindent 8 }}
     spec:
-    {{- with .Values.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      {{- toYaml . | nindent 8 }}
-    {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "ca-controller-for-strimzi.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -43,8 +43,20 @@ spec:
               port: 8081
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.securityContext }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- else }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
           volumeMounts:
             {{- range $name, $spec := $.Values.volumes }}
             - name: {{ $name }}
