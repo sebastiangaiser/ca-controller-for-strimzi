@@ -8,9 +8,9 @@ require (
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/prometheus/client_golang v1.20.5
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.32.1
-	k8s.io/apimachinery v0.32.1
-	k8s.io/client-go v0.32.1
+	k8s.io/api v0.32.2
+	k8s.io/apimachinery v0.32.2
+	k8s.io/client-go v0.32.2
 	sigs.k8s.io/controller-runtime v0.20.1
 )
 
