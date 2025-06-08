@@ -1,0 +1,19 @@
+name: releaser-pleaser
+
+on:
+  push:
+    branches: [main]
+  pull_request_target:
+    types:
+      - edited
+      - labeled
+      - unlabeled
+
+jobs:
+  releaser-pleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: releaser-pleaser
+        uses: apricote/releaser-pleaser@v0.5.1
+        with:
+          token: ${{ secrets.RELEASER_PLEASER_TOKEN }}
