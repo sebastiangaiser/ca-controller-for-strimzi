@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.2.0)
+
+### Features
+
+- **helm**: set default securityContext matching pod-security &#39;restricted&#39; (#103)
+
 ## [v0.1.11](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.1.11)
 
 ### Bug Fixes
