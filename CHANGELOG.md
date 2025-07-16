@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.1](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.2.1)
+
+### Bug Fixes
+
+- **deps**: update kubernetes packages to v0.33.2 (#108)
+- **deps**: update kubernetes packages to v0.33.3 (#114)
+
 ## [v0.2.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.2.0)
 
 ### Features
