@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.25.0
 
 require (
-	github.com/onsi/ginkgo/v2 v2.25.2
+	github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.34.0
