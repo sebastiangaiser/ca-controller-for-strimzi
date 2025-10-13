@@ -41,3 +41,29 @@ extraContainers: []
 
 env: {}
 envFrom: []
+
+networkPolicy:
+  enabled: false
+  flavor: cilium
+  cilium:
+    egress: []
+      # - toEndpoints:
+      #     - matchLabels:
+      #         io.kubernetes.pod.namespace: kube-system
+      #         app.kubernetes.io/instance: coredns
+      #         app.kubernetes.io/name: coredns
+      #   toPorts:
+      #     - ports:
+      #         - port: "53"
+      #           protocol: UDP
+      #         - port: "53"
+      #           protocol: TCP
+    ingress: []
+      # - fromEndpoints:
+      #     - matchLabels:
+      #         io.kubernetes.pod.namespace: monitoring
+      #         app.kubernetes.io/name: prometheus
+      #   toPorts:
+      #     - ports:
+      #         - port: http
+      #           protocol: TCP
