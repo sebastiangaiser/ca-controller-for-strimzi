@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.3.0)
+
+### Features
+
+- **chart**: add CiliumNetworkPolicy (#146)
+
 ## [v0.2.1](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.2.1)
 
 ### Bug Fixes
