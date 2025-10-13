@@ -1,0 +1,21 @@
+{{- if and .Values.networkPolicy.enabled (eq .Values.networkPolicy.flavor "cilium") -}}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ include "ca-controller-for-strimzi.fullname" . }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "ca-controller-for-strimzi.selectorLabels" . | nindent 6 }}
+  egress:
+    - toEntities:
+        - kube-apiserver
+    {{- if and .Values.networkPolicy.cilium .Values.networkPolicy.cilium.egress }}
+    {{- toYaml .Values.networkPolicy.cilium.egress | nindent 4 }}
+    {{- end }}
+  {{- if and .Values.networkPolicy.cilium .Values.networkPolicy.cilium.ingress }}
+  ingress:
+    {{- toYaml .Values.networkPolicy.cilium.ingress | nindent 4 }}
+  {{- end }}
+{{- end -}}
