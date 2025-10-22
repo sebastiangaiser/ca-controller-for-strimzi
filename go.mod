@@ -3,7 +3,7 @@ module github.com/sebastiangaiser/ca-controller-for-strimzi
 go 1.25.2
 
 require (
-	github.com/onsi/ginkgo/v2 v2.26.0
+	github.com/onsi/ginkgo/v2 v2.27.1
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/zap v1.27.0
 	k8s.io/api v0.34.1
