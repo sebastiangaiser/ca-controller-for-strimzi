@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 go build -o ca-controller-for-strimzi
 
 
 # final image
-FROM alpine:3.23.2
+FROM alpine:3.23.3
 
 RUN apk add --no-cache ca-certificates \
     && update-ca-certificates
