@@ -1,0 +1,5 @@
+# renovate: datasource=docker depName=alpine
+defaultBaseImage: alpine:3.23.3
+defaultPlatforms:
+  - linux/amd64
+  - linux/arm64
