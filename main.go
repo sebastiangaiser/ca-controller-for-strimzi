@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -214,7 +213,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		// but first check if the hash label exists...
 		targetSecretHash, ok := targetSecret.Labels[hashLabelKey]
 		if !ok {
-			return ctrlRuntime.Result{}, errors.New(fmt.Sprintf("label '%s' not found for target secret '%s'", targetSecret, hashLabelKey))
+			return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecret, hashLabelKey)
 		}
 		// now check if it needs an update
 		if tlsSecretHash != targetSecretHash {
@@ -231,7 +230,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		// but first check if the hash label exists...
 		targetSecretKeyHash, ok := targetSecretKey.Labels[hashLabelKey]
 		if !ok {
-			return ctrlRuntime.Result{}, errors.New(fmt.Sprintf("label '%s' not found for target secret '%s'", targetSecretKey, hashLabelKey))
+			return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecretKey, hashLabelKey)
 		}
 		// now check if it needs an update
 		if tlsSecretHash != targetSecretKeyHash {
@@ -257,9 +256,18 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		} else {
 			ctrlRuntime.Log.Info(fmt.Sprintf("Target secret %s successfully reconciled", tlsSecretAnnotations[targetSecretAnnotationNameKey]))
 		}
-	} else {
-		ctrlRuntime.Log.Info(fmt.Sprintf("Updating target secret %s/%s", targetSecretKeyToApply.Name, targetSecretKeyToApply.Namespace))
-		err := r.client.Update(ctx, targetSecretToApply)
+	} else if targetSecretNeedsUpdate {
+		// Create historical secret before updating
+		historicalSecret := buildHistoricalSecret(targetSecret, strimziCaCertGeneration)
+		ctrlRuntime.Log.Info(fmt.Sprintf("Creating historical secret %s/%s", historicalSecret.Name, historicalSecret.Namespace))
+		err := r.client.Create(ctx, historicalSecret)
+		if err != nil {
+			return ctrlRuntime.Result{}, fmt.Errorf("failed to create historical secret %s: %w", historicalSecret.Name, err)
+		}
+		ctrlRuntime.Log.Info(fmt.Sprintf("Historical secret %s successfully created", historicalSecret.Name))
+
+		ctrlRuntime.Log.Info(fmt.Sprintf("Updating target secret %s/%s", targetSecretToApply.Name, targetSecretToApply.Namespace))
+		err = r.client.Update(ctx, targetSecretToApply)
 		if err != nil {
 			return ctrlRuntime.Result{}, err
 		} else {
@@ -274,9 +282,18 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		} else {
 			ctrlRuntime.Log.Info(fmt.Sprintf("Target secret %s successfully reconciled", tlsSecretAnnotations[targetSecretAnnotationKeyNameKey]))
 		}
-	} else {
+	} else if targetSecretKeyNeedsUpdate {
+		// Create historical secret before updating
+		historicalSecretKey := buildHistoricalSecret(targetSecretKey, strimziCaKeyGeneration)
+		ctrlRuntime.Log.Info(fmt.Sprintf("Creating historical secret %s/%s", historicalSecretKey.Name, historicalSecretKey.Namespace))
+		err := r.client.Create(ctx, historicalSecretKey)
+		if err != nil {
+			return ctrlRuntime.Result{}, fmt.Errorf("failed to create historical secret %s: %w", historicalSecretKey.Name, err)
+		}
+		ctrlRuntime.Log.Info(fmt.Sprintf("Historical secret %s successfully created", historicalSecretKey.Name))
+
 		ctrlRuntime.Log.Info(fmt.Sprintf("Updating target secret %s/%s", targetSecretKeyToApply.Name, targetSecretKeyToApply.Namespace))
-		err := r.client.Update(ctx, targetSecretKeyToApply)
+		err = r.client.Update(ctx, targetSecretKeyToApply)
 		if err != nil {
 			return ctrlRuntime.Result{}, err
 		} else {
