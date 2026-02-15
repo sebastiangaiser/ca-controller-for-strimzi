@@ -1,0 +1,98 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  KIND_CLUSTER_NAME: ca-controller-e2e
+  IMAGE_REPO: ghcr.io/sebastiangaiser/ca-controller-for-strimzi
+  IMAGE_TAG: e2e-test
+  NAMESPACE: kafka
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Install kind
+        uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.13.0
+        with:
+          install_only: true
+
+      - name: Install Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+        with:
+          version: v4.1.0
+
+      - name: Create kind cluster
+        run: |
+          kind create cluster --name ${{ env.KIND_CLUSTER_NAME }} --wait 5m
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} .
+
+      - name: Load image into kind
+        run: |
+          kind load docker-image ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} --name ${{ env.KIND_CLUSTER_NAME }}
+
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.yaml
+          kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=120s
+          kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=120s
+          kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=120s
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }}
+
+      - name: Deploy controller
+        run: |
+          helm upgrade --install ca-controller-for-strimzi ./chart \
+            --namespace ${{ env.NAMESPACE }} \
+            --set image.repository=${{ env.IMAGE_REPO }} \
+            --set image.tag=${{ env.IMAGE_TAG }} \
+            --set image.pullPolicy=Never \
+            --wait
+
+      - name: Wait for controller to be ready
+        run: |
+          kubectl wait --for=condition=Available deployment/ca-controller-for-strimzi -n ${{ env.NAMESPACE }} --timeout=120s
+
+      - name: Run e2e tests
+        run: |
+          ./hack/e2e-test.sh
+
+      - name: Show controller logs on failure
+        if: failure()
+        run: |
+          echo "=== Controller Logs ==="
+          kubectl logs -n ${{ env.NAMESPACE }} -l app.kubernetes.io/name=ca-controller-for-strimzi --tail=100
+
+      - name: Show all secrets on failure
+        if: failure()
+        run: |
+          echo "=== Secrets in ${{ env.NAMESPACE }} namespace ==="
+          kubectl get secrets -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "=== Certificates in ${{ env.NAMESPACE }} namespace ==="
+          kubectl get certificates -n ${{ env.NAMESPACE }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          kind delete cluster --name ${{ env.KIND_CLUSTER_NAME }}
