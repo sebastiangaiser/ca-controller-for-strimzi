@@ -42,15 +42,15 @@ fmt: ## Run go fmt
 vet: ## Run go vet
 	go vet ./...
 
-##@ Docker
+##@ Ko
 
-.PHONY: docker-build
-docker-build: ## Build Docker image
-	docker build -t $(IMAGE) .
+.PHONY: ko-build
+ko-build: ## Build and push image with ko
+	KO_DOCKER_REPO=$(IMAGE_REPO) ko build --bare --tags=$(IMAGE_TAG) .
 
-.PHONY: docker-push
-docker-push: ## Push Docker image
-	docker push $(IMAGE)
+.PHONY: ko-build-local
+ko-build-local: ## Build image with ko and load into local container daemon
+	$(if $(wildcard $(XDG_RUNTIME_DIR)/podman/podman.sock),DOCKER_HOST=unix://$(XDG_RUNTIME_DIR)/podman/podman.sock) KO_DOCKER_REPO=$(IMAGE_REPO) ko build --bare --tags=$(IMAGE_TAG) --local .
 
 ##@ E2E Testing
 
@@ -67,7 +67,7 @@ kind-delete: ## Delete kind cluster
 	kind delete cluster --name $(KIND_CLUSTER_NAME)
 
 .PHONY: kind-load
-kind-load: docker-build ## Load Docker image into kind cluster
+kind-load: ko-build-local ## Load image into kind cluster
 	kind load docker-image $(IMAGE) --name $(KIND_CLUSTER_NAME)
 
 .PHONY: install-cert-manager

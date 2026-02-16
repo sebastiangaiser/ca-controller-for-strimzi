@@ -12,32 +12,25 @@ permissions:
 jobs:
   image:
     runs-on: ubuntu-latest
+    env:
+      KO_DOCKER_REPO: ghcr.io/sebastiangaiser/ca-controller-for-strimzi
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - run: git fetch --force --tags
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
-      - name: Log into registry ghcr.io
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+
+      - name: Set up Go
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Skaffold Github Action
-        uses: hiberbee/github-action-skaffold@e3f5dd5659610cb792c6cf32daaa797ea6d89842 # 1.27.0
-        with:
-          # renovate: datasource=github-releases depName=GoogleContainerTools/skaffold extractVersion=^v(?<version>.*)$
-          skaffold-version: 2.17.2
-          # not working to upgrade in the action...
-          # container-structure-test-version: 1.16.1
-          # kubectl-version: 1.29.4
-          command: build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run:
-          git status
+          go-version-file: go.mod
+
+      - name: Setup ko
+        uses: ko-build/setup-ko@d006021bd0c28d1ce33a07e7943d48b079944c8d # v0.9
+
+      - name: Login to GHCR
+        run: ko login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          ko build --bare --tags=$(git describe --tags --always) .

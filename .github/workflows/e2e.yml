@@ -24,8 +24,8 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - name: Setup ko
+        uses: ko-build/setup-ko@d006021bd0c28d1ce33a07e7943d48b079944c8d # v0.9
 
       - name: Install kind
         uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.13.0
@@ -41,12 +41,9 @@ jobs:
         run: |
           kind create cluster --name ${{ env.KIND_CLUSTER_NAME }} --wait 5m
 
-      - name: Build Docker image
+      - name: Build image and load into kind
         run: |
-          docker build -t ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} .
-
-      - name: Load image into kind
-        run: |
+          KO_DOCKER_REPO=${{ env.IMAGE_REPO }} ko build --bare --tags=${{ env.IMAGE_TAG }} --local .
           kind load docker-image ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }} --name ${{ env.KIND_CLUSTER_NAME }}
 
       - name: Install cert-manager
