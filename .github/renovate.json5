@@ -14,6 +14,24 @@
   postUpdateOptions: [
     'gomodTidy',
   ],
+  packageRules: [
+    {
+      matchManagers: ['github-actions'],
+      automerge: true,
+    },
+    {
+      matchPackageNames: [
+        'golang',
+        'k8s.io/api',
+        'k8s.io/apimachinery',
+        'k8s.io/client-go',
+        'github.com/onsi/ginkgo/v2',
+        'sigs.k8s.io/controller-runtime',
+        'go.uber.org/zap',
+      ],
+      automerge: true,
+    },
+  ],
   rebaseWhen: 'conflicted',
   semanticCommits: 'enabled',
   timezone: 'Europe/Berlin',
