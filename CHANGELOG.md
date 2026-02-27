@@ -1,5 +1,29 @@
 # Changelog
 
+## [v0.4.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.4.0)
+
+### Features
+
+- add secret history (#174)
+
+### Bug Fixes
+
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.27.1 (#150)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.27.2 (#152)
+- **deps**: update module sigs.k8s.io/controller-runtime to v0.22.4 (#153)
+- **deps**: update kubernetes packages to v0.34.2 (#155)
+- **deps**: update module go.uber.org/zap to v1.27.1 (#156)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.27.3 (#160)
+- **deps**: update kubernetes packages to v0.34.3 (#161)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.27.4 (#164)
+- **deps**: update kubernetes packages to v0.35.0 (#162)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.27.5 (#165)
+- **deps**: update module sigs.k8s.io/controller-runtime to v0.23.0 (#167)
+- **deps**: update module sigs.k8s.io/controller-runtime to v0.23.1 (#168)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.28.1 (#170)
+- **deps**: update kubernetes packages to v0.35.1 (#172)
+- **deps**: update kubernetes packages to v0.35.2 (#185)
+
 ## [v0.3.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.3.0)
 
 ### Features
