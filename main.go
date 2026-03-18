@@ -6,6 +6,9 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap/zapcore"
 	corev1 "k8s.io/api/core/v1"
@@ -13,8 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"net/http"
-	"os"
 	ctrlRuntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -189,7 +190,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	caCrt := string(tlsSecret.Data["ca.crt"])
 	tlsCrt := string(tlsSecret.Data["tls.crt"])
 	tlsKey := string(tlsSecret.Data["tls.key"])
-	combinedCrt := tlsCrt + caCrt
 
 	// check if target secrets are existing
 	targetSecret := &corev1.Secret{}
@@ -200,7 +200,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	targetSecretKeyNeedsUpdate := false
 
 	// process tlsSecretHash for comparison with target secrets label
-	tlsSecretHashRaw := sha256.Sum256([]byte(combinedCrt + tlsKey))
+	tlsSecretHashRaw := sha256.Sum256([]byte(caCrt + tlsCrt + tlsKey))
 	tlsSecretHash := truncateString(hex.EncodeToString(tlsSecretHashRaw[:]), 63)
 
 	// TODO export to function
@@ -245,7 +245,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 
 	clusterName := tlsSecretAnnotations[targetClusterNameKey]
 
-	targetSecretToApply := buildTargetSecret(targetSecretExists, targetSecret, map[string]string{"ca.crt": combinedCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
+	targetSecretToApply := buildTargetSecret(targetSecretExists, targetSecret, map[string]string{"ca.crt": caCrt, "tls.crt": tlsCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
 	targetSecretKeyToApply := buildTargetSecret(targetSecretKeyExists, targetSecretKey, map[string]string{"ca.key": tlsKey}, tlsSecretAnnotations[targetSecretAnnotationKeyNameKey], req.Namespace, tlsSecretHash, strimziCaKeyGeneration, clusterName)
 
 	if !targetSecretExists {
