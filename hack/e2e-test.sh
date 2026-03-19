@@ -102,10 +102,14 @@ cleanup_test_resources() {
     log_info "Cleaning up test resources..."
     kubectl delete certificate my-cluster-clients-ca-cert-tls -n "$NAMESPACE" --ignore-not-found
     kubectl delete certificate my-cluster-cluster-ca-cert-tls -n "$NAMESPACE" --ignore-not-found
+    kubectl delete certificate rotation-policy-never-ca-cert-tls -n "$NAMESPACE" --ignore-not-found
     kubectl delete secret my-cluster-clients-ca-cert -n "$NAMESPACE" --ignore-not-found
     kubectl delete secret my-cluster-clients-ca -n "$NAMESPACE" --ignore-not-found
     kubectl delete secret my-cluster-cluster-ca-cert -n "$NAMESPACE" --ignore-not-found
     kubectl delete secret my-cluster-cluster-ca -n "$NAMESPACE" --ignore-not-found
+    kubectl delete secret rotation-policy-never-ca-cert -n "$NAMESPACE" --ignore-not-found
+    kubectl delete secret rotation-policy-never-ca -n "$NAMESPACE" --ignore-not-found
+    kubectl delete secret rotation-policy-never-ca-cert-tls -n "$NAMESPACE" --ignore-not-found
     # Clean up any historical secrets
     kubectl delete secrets -n "$NAMESPACE" -l sebastian.gaiser.bayern/historical=true --ignore-not-found
     sleep 2
@@ -296,6 +300,105 @@ test_certificate_rotation() {
 }
 
 # ==============================================================================
+# Test: rotationPolicy Never creates key secret initially but skips updates
+# ==============================================================================
+test_rotation_policy_never() {
+    log_info "=== Test: rotationPolicy Never creates key secret initially but skips updates ==="
+
+    # Create a certificate with rotationPolicy: Never
+    log_info "Creating certificate with rotationPolicy: Never..."
+    cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rotation-policy-never-ca-cert-tls
+  namespace: $NAMESPACE
+spec:
+  isCA: true
+  commonName: rotation-policy-never-ca-cert-tls
+  secretName: rotation-policy-never-ca-cert-tls
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: &rotationPolicy Never
+  issuerRef:
+    name: my-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
+  secretTemplate:
+    annotations:
+      sebastian.gaiser.bayern/tls-strimzi-ca: "reconcile"
+      sebastian.gaiser.bayern/target-cluster-name: "my-cluster"
+      sebastian.gaiser.bayern/target-secret-name: "rotation-policy-never-ca-cert"
+      sebastian.gaiser.bayern/target-secret-key-name: "rotation-policy-never-ca"
+      sebastian.gaiser.bayern/rotation-policy: *rotationPolicy
+EOF
+
+    # Wait for certificate to be ready
+    kubectl wait --for=condition=Ready certificate/rotation-policy-never-ca-cert-tls -n "$NAMESPACE" --timeout=60s
+
+    # Wait for controller to create the cert and key target secrets
+    wait_for_secret "rotation-policy-never-ca-cert" "$NAMESPACE" 30
+    wait_for_secret "rotation-policy-never-ca" "$NAMESPACE" 30
+
+    # Verify both secrets exist after initial creation
+    assert_secret_exists "rotation-policy-never-ca-cert" "$NAMESPACE"
+    assert_secret_exists "rotation-policy-never-ca" "$NAMESPACE"
+
+    # Verify cert secret has correct data
+    local ca_crt
+    ca_crt=$(kubectl get secret rotation-policy-never-ca-cert -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}')
+    assert_not_empty "$ca_crt" "Cert secret has ca.crt data"
+
+    # Verify key secret has correct data
+    local ca_key
+    ca_key=$(kubectl get secret rotation-policy-never-ca -n "$NAMESPACE" -o jsonpath='{.data.ca\.key}')
+    assert_not_empty "$ca_key" "Key secret has ca.key data"
+
+    # Record key and cert hashes before rotation
+    local key_hash_before cert_hash_before
+    key_hash_before=$(kubectl get secret rotation-policy-never-ca -n "$NAMESPACE" -o jsonpath='{.metadata.labels.sebastian\.gaiser\.bayern/hash}')
+    cert_hash_before=$(kubectl get secret rotation-policy-never-ca-cert -n "$NAMESPACE" -o jsonpath='{.metadata.labels.sebastian\.gaiser\.bayern/hash}')
+    log_info "Key hash before rotation: $key_hash_before"
+    log_info "Cert hash before rotation: $cert_hash_before"
+
+    # Trigger rotation by deleting the source secret
+    log_info "Triggering certificate rotation..."
+    kubectl delete secret rotation-policy-never-ca-cert-tls -n "$NAMESPACE"
+
+    # Wait for cert-manager to recreate the secret
+    sleep 5
+    kubectl wait --for=condition=Ready certificate/rotation-policy-never-ca-cert-tls -n "$NAMESPACE" --timeout=60s
+
+    # Wait for controller to process the change
+    sleep 10
+
+    # Verify key secret was NOT updated (hash unchanged)
+    local key_hash_after
+    key_hash_after=$(kubectl get secret rotation-policy-never-ca -n "$NAMESPACE" -o jsonpath='{.metadata.labels.sebastian\.gaiser\.bayern/hash}')
+    log_info "Key hash after rotation: $key_hash_after"
+
+    assert_equals "$key_hash_before" "$key_hash_after" "Key secret hash unchanged after rotation (rotationPolicy: Never)"
+
+    # Verify no historical key secret was created
+    local historical_key_secret="rotation-policy-never-ca-generation-0"
+    assert_secret_not_exists "$historical_key_secret" "$NAMESPACE"
+
+    # Verify cert secret was updated (hash changed)
+    local cert_hash_after
+    cert_hash_after=$(kubectl get secret rotation-policy-never-ca-cert -n "$NAMESPACE" -o jsonpath='{.metadata.labels.sebastian\.gaiser\.bayern/hash}')
+    log_info "Cert hash after rotation: $cert_hash_after"
+
+    if [[ "$cert_hash_before" != "$cert_hash_after" ]]; then
+        log_info "PASS: Cert secret hash changed after rotation"
+        ((TEST_PASSED++)) || true
+    else
+        log_error "FAIL: Cert secret hash did not change after rotation"
+        ((TEST_FAILED++)) || true
+    fi
+}
+
+# ==============================================================================
 # Main
 # ==============================================================================
 main() {
@@ -309,6 +412,7 @@ main() {
     test_controller_running
     test_certificate_creation
     test_certificate_rotation
+    test_rotation_policy_never
 
     # Cleanup after tests
     cleanup_test_resources

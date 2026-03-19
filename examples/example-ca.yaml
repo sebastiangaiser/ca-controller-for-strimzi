@@ -43,6 +43,7 @@ spec:
   privateKey:
     algorithm: ECDSA
     size: 256
+    rotationPolicy: &rotationPolicy Never
   issuerRef:
     name: my-ca
     kind: ClusterIssuer
@@ -53,6 +54,7 @@ spec:
       sebastian.gaiser.bayern/target-cluster-name: "my-cluster"
       sebastian.gaiser.bayern/target-secret-name: "my-cluster-clients-ca-cert"
       sebastian.gaiser.bayern/target-secret-key-name: "my-cluster-clients-ca"
+      sebastian.gaiser.bayern/rotation-policy: *rotationPolicy
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -66,6 +68,7 @@ spec:
   privateKey:
     algorithm: ECDSA
     size: 256
+    rotationPolicy: &rotationPolicy Never
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
@@ -76,3 +79,4 @@ spec:
       sebastian.gaiser.bayern/target-cluster-name: "my-cluster"
       sebastian.gaiser.bayern/target-secret-name: "my-cluster-cluster-ca-cert"
       sebastian.gaiser.bayern/target-secret-key-name: "my-cluster-cluster-ca"
+      sebastian.gaiser.bayern/rotation-policy: *rotationPolicy
