@@ -8,29 +8,12 @@ import (
 	"strconv"
 )
 
-const (
-	defaultTargetSecretGeneration = "0"
-)
-
-func incrementString(input string) string {
-	i, err := strconv.Atoi(input)
-	if err != nil {
-		log.Error(err, "failed to increment string")
-	}
-	i++
-	s := strconv.Itoa(i)
-	return s
+func incrementGeneration(current string) string {
+	i, _ := strconv.Atoi(current)
+	return strconv.Itoa(i + 1)
 }
 
-func buildTargetSecret(exists bool, sourceSecret *corev1.Secret, data map[string]string, secretName, secretNamespace, tlsSecretHash, certOrKeyLabel, clusterName string) *corev1.Secret {
-	var generation string
-	if !exists {
-		generation = defaultTargetSecretGeneration
-	} else {
-		oldGeneration := sourceSecret.GetAnnotations()[certOrKeyLabel]
-		generation = incrementString(oldGeneration)
-		ctrlRuntime.Log.Info(fmt.Sprintf("Secret %s was updated from %s to %s", sourceSecret.Name, oldGeneration, generation))
-	}
+func buildTargetSecret(generation string, data map[string]string, secretName, secretNamespace, tlsSecretHash, certOrKeyLabel, clusterName string) *corev1.Secret {
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretName,

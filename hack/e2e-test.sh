@@ -399,6 +399,53 @@ EOF
 }
 
 # ==============================================================================
+# Test: Generation tracking for new and pre-existing secrets
+# ==============================================================================
+test_generation_tracking() {
+    log_info "=== Test: Generation tracking for new and pre-existing (takeover) secrets ==="
+
+    # --- New secret: generation must start at 0 ---
+    local generation
+    generation=$(kubectl get secret my-cluster-clients-ca-cert -n "$NAMESPACE" \
+        -o jsonpath='{.metadata.annotations.strimzi\.io/ca-cert-generation}')
+    assert_equals "0" "$generation" "New cert secret starts at generation 0"
+
+    local key_generation
+    key_generation=$(kubectl get secret my-cluster-clients-ca -n "$NAMESPACE" \
+        -o jsonpath='{.metadata.annotations.strimzi\.io/ca-key-generation}')
+    assert_equals "0" "$key_generation" "New key secret starts at generation 0"
+
+    # --- Pre-existing secret takeover ---
+    # Simulate a secret that was previously managed by Strimzi (or an older controller version):
+    # set a known generation and remove the hash label so the controller treats it as unmanaged.
+    log_info "Simulating pre-existing secret at generation 5..."
+    kubectl annotate secret my-cluster-clients-ca-cert -n "$NAMESPACE" \
+        strimzi.io/ca-cert-generation=5 --overwrite
+    kubectl label secret my-cluster-clients-ca-cert -n "$NAMESPACE" \
+        "sebastian.gaiser.bayern/hash-"
+
+    # Trigger a reconcile by deleting the source secret so cert-manager reissues it
+    kubectl delete secret my-cluster-clients-ca-cert-tls -n "$NAMESPACE"
+    sleep 5
+    kubectl wait --for=condition=Ready certificate/my-cluster-clients-ca-cert-tls \
+        -n "$NAMESPACE" --timeout=60s
+
+    # Wait for the controller to process the updated source secret
+    sleep 10
+
+    # Verify the controller incremented from generation 5 → 6
+    generation=$(kubectl get secret my-cluster-clients-ca-cert -n "$NAMESPACE" \
+        -o jsonpath='{.metadata.annotations.strimzi\.io/ca-cert-generation}')
+    assert_equals "6" "$generation" "Controller incremented generation from 5 to 6 (takeover)"
+
+    # Verify the hash label was re-added (controller now owns the secret)
+    local hash
+    hash=$(kubectl get secret my-cluster-clients-ca-cert -n "$NAMESPACE" \
+        -o jsonpath='{.metadata.labels.sebastian\.gaiser\.bayern/hash}')
+    assert_not_empty "$hash" "Controller added hash label when taking over pre-existing secret"
+}
+
+# ==============================================================================
 # Main
 # ==============================================================================
 main() {
@@ -411,6 +458,7 @@ main() {
     # Run tests
     test_controller_running
     test_certificate_creation
+    test_generation_tracking
     test_certificate_rotation
     test_rotation_policy_never
 

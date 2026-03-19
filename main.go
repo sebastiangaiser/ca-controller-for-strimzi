@@ -216,14 +216,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		ctrlRuntime.Log.Info(fmt.Sprintf("Secret %s already exists", tlsSecretAnnotations[targetSecretAnnotationNameKey]))
 		targetSecretExists = true
 
-		// check if target secret need an update
-		// but first check if the hash label exists...
-		targetSecretHash, ok := targetSecret.Labels[hashLabelKey]
-		if !ok {
-			return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecret, hashLabelKey)
-		}
-		// now check if it needs an update
-		if tlsSecretHash != targetSecretHash {
+		// missing hash label means the secret was not previously managed by this controller;
+		// treat it as needing an update so we take ownership
+		if tlsSecretHash != targetSecret.Labels[hashLabelKey] {
 			targetSecretNeedsUpdate = true
 		}
 	}
@@ -234,14 +229,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		targetSecretKeyExists = true
 
 		if !rotationPolicyIsNever {
-			// check if target secret need an update
-			// but first check if the hash label exists...
-			targetSecretKeyHash, ok := targetSecretKey.Labels[hashLabelKey]
-			if !ok {
-				return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecretKey, hashLabelKey)
-			}
-			// now check if it needs an update
-			if tlsSecretHash != targetSecretKeyHash {
+			// missing hash label means the secret was not previously managed by this controller;
+			// treat it as needing an update so we take ownership
+			if tlsSecretHash != targetSecretKey.Labels[hashLabelKey] {
 				targetSecretKeyNeedsUpdate = true
 			}
 		}
@@ -254,8 +244,20 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 
 	clusterName := tlsSecretAnnotations[targetClusterNameKey]
 
-	targetSecretToApply := buildTargetSecret(targetSecretExists, targetSecret, map[string]string{"ca.crt": caCrt, "tls.crt": tlsCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
-	targetSecretKeyToApply := buildTargetSecret(targetSecretKeyExists, targetSecretKey, map[string]string{"ca.key": tlsKey}, tlsSecretAnnotations[targetSecretAnnotationKeyNameKey], req.Namespace, tlsSecretHash, strimziCaKeyGeneration, clusterName)
+	certGeneration := "0"
+	if targetSecretExists {
+		certGeneration = incrementGeneration(targetSecret.GetAnnotations()[strimziCaCertGeneration])
+	}
+	keyGeneration := "0"
+	if rotationPolicyIsNever && targetSecretKeyExists {
+		// preserve the existing key generation; the key did not rotate
+		keyGeneration = targetSecretKey.GetAnnotations()[strimziCaKeyGeneration]
+	} else if targetSecretKeyExists {
+		keyGeneration = incrementGeneration(targetSecretKey.GetAnnotations()[strimziCaKeyGeneration])
+	}
+
+	targetSecretToApply := buildTargetSecret(certGeneration, map[string]string{"ca.crt": caCrt, "tls.crt": tlsCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
+	targetSecretKeyToApply := buildTargetSecret(keyGeneration, map[string]string{"ca.key": tlsKey}, tlsSecretAnnotations[targetSecretAnnotationKeyNameKey], req.Namespace, tlsSecretHash, strimziCaKeyGeneration, clusterName)
 
 	if !targetSecretExists {
 		ctrlRuntime.Log.Info(fmt.Sprintf("Creating target secret %s/%s", targetSecretKeyToApply.Name, targetSecretKeyToApply.Namespace))
