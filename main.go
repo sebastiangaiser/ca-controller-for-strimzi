@@ -45,6 +45,8 @@ var (
 	strimziKindValue                 = "Kafka"
 	strimziCaCertGeneration          = "strimzi.io/ca-cert-generation"
 	strimziCaKeyGeneration           = "strimzi.io/ca-key-generation"
+	rotationPolicyAnnotationKey      = "sebastian.gaiser.bayern/rotation-policy"
+	rotationPolicyNever              = "Never"
 )
 
 func init() {
@@ -191,6 +193,11 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	tlsCrt := string(tlsSecret.Data["tls.crt"])
 	tlsKey := string(tlsSecret.Data["tls.key"])
 
+	rotationPolicyIsNever := tlsSecretAnnotations[rotationPolicyAnnotationKey] == rotationPolicyNever
+	if rotationPolicyIsNever {
+		ctrlRuntime.Log.Info(fmt.Sprintf("Secret with name '%s' has rotationPolicy 'Never', skipping private key secret operations", tlsSecret.Name))
+	}
+
 	// check if target secrets are existing
 	targetSecret := &corev1.Secret{}
 	targetSecretExists := false
@@ -226,15 +233,17 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 		ctrlRuntime.Log.Info(fmt.Sprintf("Secret %s already exists", tlsSecretAnnotations[targetSecretAnnotationKeyNameKey]))
 		targetSecretKeyExists = true
 
-		// check if target secret need an update
-		// but first check if the hash label exists...
-		targetSecretKeyHash, ok := targetSecretKey.Labels[hashLabelKey]
-		if !ok {
-			return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecretKey, hashLabelKey)
-		}
-		// now check if it needs an update
-		if tlsSecretHash != targetSecretKeyHash {
-			targetSecretKeyNeedsUpdate = true
+		if !rotationPolicyIsNever {
+			// check if target secret need an update
+			// but first check if the hash label exists...
+			targetSecretKeyHash, ok := targetSecretKey.Labels[hashLabelKey]
+			if !ok {
+				return ctrlRuntime.Result{}, fmt.Errorf("label '%s' not found for target secret '%s'", targetSecretKey, hashLabelKey)
+			}
+			// now check if it needs an update
+			if tlsSecretHash != targetSecretKeyHash {
+				targetSecretKeyNeedsUpdate = true
+			}
 		}
 	}
 
