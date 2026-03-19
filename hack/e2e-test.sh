@@ -241,6 +241,40 @@ EOF
 }
 
 # ==============================================================================
+# Test: ca.crt in target secret contains combined cluster CA + issuing CA cert
+# ==============================================================================
+test_combined_cert_format() {
+    log_info "=== Test: ca.crt contains combined cert (cluster CA first, then issuing CA) ==="
+
+    # Get source secret cert data (decoded from base64)
+    local source_tls_crt source_ca_crt
+    source_tls_crt=$(kubectl get secret my-cluster-clients-ca-cert-tls -n "$NAMESPACE" -o jsonpath='{.data.tls\.crt}' | base64 -d)
+    source_ca_crt=$(kubectl get secret my-cluster-clients-ca-cert-tls -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}' | base64 -d)
+
+    # Get target secret ca.crt (decoded)
+    local target_ca_crt
+    target_ca_crt=$(kubectl get secret my-cluster-clients-ca-cert -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}' | base64 -d)
+
+    # Verify the combined cert contains exactly 2 certificates
+    local cert_count
+    cert_count=$(echo "$target_ca_crt" | grep -c "BEGIN CERTIFICATE")
+    assert_equals "2" "$cert_count" "Target ca.crt contains 2 certificates (cluster CA + issuing CA)"
+
+    # Verify the first cert in ca.crt matches the source tls.crt (cluster CA cert)
+    # This is critical: the first cert must match ca.key so Strimzi can sign new certs
+    local first_cert_fp source_tls_fp
+    first_cert_fp=$(echo "$target_ca_crt" | openssl x509 -fingerprint -noout 2>/dev/null)
+    source_tls_fp=$(echo "$source_tls_crt" | openssl x509 -fingerprint -noout 2>/dev/null)
+    assert_equals "$source_tls_fp" "$first_cert_fp" "First cert in target ca.crt is the cluster CA cert (matches ca.key)"
+
+    # Verify the second cert matches the issuing CA cert (ca.crt from source)
+    local second_cert_fp source_ca_fp
+    second_cert_fp=$(echo "$target_ca_crt" | awk '/-----BEGIN CERTIFICATE-----/{found++} found==2{print} /-----END CERTIFICATE-----/ && found==2{exit}' | openssl x509 -fingerprint -noout 2>/dev/null)
+    source_ca_fp=$(echo "$source_ca_crt" | openssl x509 -fingerprint -noout 2>/dev/null)
+    assert_equals "$source_ca_fp" "$second_cert_fp" "Second cert in target ca.crt is the issuing CA cert"
+}
+
+# ==============================================================================
 # Test: Certificate rotation creates historical secrets
 # ==============================================================================
 test_certificate_rotation() {
@@ -411,6 +445,7 @@ main() {
     # Run tests
     test_controller_running
     test_certificate_creation
+    test_combined_cert_format
     test_certificate_rotation
     test_rotation_policy_never
 
