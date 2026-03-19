@@ -192,6 +192,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	caCrt := string(tlsSecret.Data["ca.crt"])
 	tlsCrt := string(tlsSecret.Data["tls.crt"])
 	tlsKey := string(tlsSecret.Data["tls.key"])
+	combinedCrt := tlsCrt + caCrt
 
 	rotationPolicyIsNever := tlsSecretAnnotations[rotationPolicyAnnotationKey] == rotationPolicyNever
 	if rotationPolicyIsNever {
@@ -207,7 +208,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 	targetSecretKeyNeedsUpdate := false
 
 	// process tlsSecretHash for comparison with target secrets label
-	tlsSecretHashRaw := sha256.Sum256([]byte(caCrt + tlsCrt + tlsKey))
+	tlsSecretHashRaw := sha256.Sum256([]byte(combinedCrt + tlsKey))
 	tlsSecretHash := truncateString(hex.EncodeToString(tlsSecretHashRaw[:]), 63)
 
 	// TODO export to function
@@ -254,7 +255,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrlRuntime.Request) (ct
 
 	clusterName := tlsSecretAnnotations[targetClusterNameKey]
 
-	targetSecretToApply := buildTargetSecret(targetSecretExists, targetSecret, map[string]string{"ca.crt": caCrt, "tls.crt": tlsCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
+	targetSecretToApply := buildTargetSecret(targetSecretExists, targetSecret, map[string]string{"ca.crt": combinedCrt}, tlsSecretAnnotations[targetSecretAnnotationNameKey], req.Namespace, tlsSecretHash, strimziCaCertGeneration, clusterName)
 	targetSecretKeyToApply := buildTargetSecret(targetSecretKeyExists, targetSecretKey, map[string]string{"ca.key": tlsKey}, tlsSecretAnnotations[targetSecretAnnotationKeyNameKey], req.Namespace, tlsSecretHash, strimziCaKeyGeneration, clusterName)
 
 	if !targetSecretExists {
