@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.5.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.0)
+
+### Features
+
+- support rotationPolicy=Never for not rotating the private key (#189)
+
+### Bug Fixes
+
+- **deps**: update kubernetes monorepo to v0.35.3 (#190)
+
 ## [v0.4.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.4.0)
 
 ### Features
