@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.1](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.1)
+
+### Bug Fixes
+
+- restore combined ca.crt (cluster CA + issuing CA) for Strimzi signing compatibility (#192)
+
 ## [v0.5.0](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.0)
 
 ### Features
