@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.5.2](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.2)
+
+### Bug Fixes
+
+- **deps**: update kubernetes monorepo to v0.35.4 (#197)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.28.2 (#200)
+- **deps**: update module go.uber.org/zap to v1.28.0 (#201)
+- **deps**: update module github.com/onsi/ginkgo/v2 to v2.28.3 (#202)
+- **deps**: update module sigs.k8s.io/controller-runtime to v0.24.0 (#203)
+
 ## [v0.5.1](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.1)
 
 ### Bug Fixes
