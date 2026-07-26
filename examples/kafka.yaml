@@ -36,9 +36,9 @@ metadata:
 spec:
   kafka:
     # renovate: datasource=custom.strimzi-kafka depName=strimzi-kafka
-    version: 4.1.1
+    version: 4.3.0
     # renovate: datasource=custom.strimzi-kafka-metadata depName=strimzi-kafka-metadata
-    metadataVersion: 4.1-IV0
+    metadataVersion: 4.3-IV0
     listeners:
       - name: plain
         port: 9092
