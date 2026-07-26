@@ -14,6 +14,17 @@
   postUpdateOptions: [
     'gomodTidy',
   ],
+  // Renovate's default ignorePaths contains `**/examples/**`, which would hide
+  // examples/kafka.yaml from the custom manager below. Keep the other defaults.
+  ignorePaths: [
+    '**/node_modules/**',
+    '**/bower_components/**',
+    '**/vendor/**',
+    '**/__tests__/**',
+    '**/test/**',
+    '**/tests/**',
+    '**/__fixtures__/**',
+  ],
   // Track the Kafka version + metadataVersion from Strimzi's authoritative
   // kafka-versions.yaml (the entry marked `default: true`).
   customDatasources: {
@@ -35,7 +46,7 @@
   customManagers: [
     {
       customType: 'regex',
-      managerFilePatterns: ['/^examples/kafka\\.yaml$/'],
+      managerFilePatterns: ['examples/kafka.yaml'],
       matchStrings: [
         '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+:\\s*(?<currentValue>\\S+)',
       ],
