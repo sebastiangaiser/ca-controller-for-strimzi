@@ -14,7 +14,44 @@
   postUpdateOptions: [
     'gomodTidy',
   ],
+  // Track the Kafka version + metadataVersion from Strimzi's authoritative
+  // kafka-versions.yaml (the entry marked `default: true`).
+  customDatasources: {
+    'strimzi-kafka': {
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/main/kafka-versions.yaml',
+      format: 'yaml',
+      transformTemplates: [
+        '{ "releases": [ { "version": $string($[default=true].version) } ] }',
+      ],
+    },
+    'strimzi-kafka-metadata': {
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/main/kafka-versions.yaml',
+      format: 'yaml',
+      transformTemplates: [
+        '{ "releases": [ { "version": $string($[default=true].metadata) } ] }',
+      ],
+    },
+  },
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: ['/^examples/kafka\\.yaml$/'],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+:\\s*(?<currentValue>\\S+)',
+      ],
+    },
+  ],
   packageRules: [
+    // Update version + metadataVersion together in a single PR.
+    {
+      matchDatasources: ['custom.strimzi-kafka', 'custom.strimzi-kafka-metadata'],
+      groupName: 'strimzi kafka version',
+    },
+    // metadataVersion looks like `4.3-IV0`, which is not semver.
+    {
+      matchDatasources: ['custom.strimzi-kafka-metadata'],
+      versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)-IV(?<patch>\\d+)$',
+    },
     {
       matchManagers: ['github-actions'],
       automerge: true,

@@ -35,7 +35,9 @@ metadata:
     strimzi.io/node-pools: enabled
 spec:
   kafka:
+    # renovate: datasource=custom.strimzi-kafka depName=strimzi-kafka
     version: 4.1.1
+    # renovate: datasource=custom.strimzi-kafka-metadata depName=strimzi-kafka-metadata
     metadataVersion: 4.1-IV0
     listeners:
       - name: plain
