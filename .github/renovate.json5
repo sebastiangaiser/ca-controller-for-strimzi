@@ -27,16 +27,23 @@
   ],
   // Track the Kafka version + metadataVersion from Strimzi's authoritative
   // kafka-versions.yaml (the entry marked `default: true`).
+  //
+  // The URL is pinned to a released Strimzi tag (NOT main, which contains
+  // Kafka versions that are not yet shipped in any Strimzi release). The tag
+  // itself is kept up to date by the second custom manager below, which bumps
+  // it via the github-releases datasource.
   customDatasources: {
     'strimzi-kafka': {
-      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/main/kafka-versions.yaml',
+      // renovate: datasource=github-releases depName=strimzi/strimzi-kafka-operator
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.1.0/kafka-versions.yaml',
       format: 'yaml',
       transformTemplates: [
         '{ "releases": [ { "version": $string($[default=true].version) } ] }',
       ],
     },
     'strimzi-kafka-metadata': {
-      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/main/kafka-versions.yaml',
+      // renovate: datasource=github-releases depName=strimzi/strimzi-kafka-operator
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.1.0/kafka-versions.yaml',
       format: 'yaml',
       transformTemplates: [
         '{ "releases": [ { "version": $string($[default=true].metadata) } ] }',
@@ -49,6 +56,15 @@
       managerFilePatterns: ['examples/kafka.yaml'],
       matchStrings: [
         '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+:\\s*(?<currentValue>\\S+)',
+      ],
+    },
+    // Keep the pinned Strimzi release tag in the datasource URLs above up to
+    // date, so we read kafka-versions.yaml from the latest *released* Strimzi.
+    {
+      customType: 'regex',
+      managerFilePatterns: ['.github/renovate.json5'],
+      matchStrings: [
+        '// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+defaultRegistryUrlTemplate:.*/strimzi-kafka-operator/(?<currentValue>[^/]+)/',
       ],
     },
   ],
