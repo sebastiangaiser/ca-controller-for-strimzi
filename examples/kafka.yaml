@@ -36,7 +36,7 @@ metadata:
 spec:
   kafka:
     # renovate: datasource=custom.strimzi-kafka depName=strimzi-kafka
-    version: 4.3.0
+    version: 4.3.1
     # renovate: datasource=custom.strimzi-kafka-metadata depName=strimzi-kafka-metadata
     metadataVersion: 4.3-IV0
     listeners:
