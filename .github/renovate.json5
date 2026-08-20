@@ -35,7 +35,7 @@
   customDatasources: {
     'strimzi-kafka': {
       // renovate: datasource=github-releases depName=strimzi/strimzi-kafka-operator
-      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.1.0/kafka-versions.yaml',
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.2.0/kafka-versions.yaml',
       format: 'yaml',
       transformTemplates: [
         '{ "releases": [ { "version": $string($[default=true].version) } ] }',
@@ -43,7 +43,7 @@
     },
     'strimzi-kafka-metadata': {
       // renovate: datasource=github-releases depName=strimzi/strimzi-kafka-operator
-      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.1.0/kafka-versions.yaml',
+      defaultRegistryUrlTemplate: 'https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/1.2.0/kafka-versions.yaml',
       format: 'yaml',
       transformTemplates: [
         '{ "releases": [ { "version": $string($[default=true].metadata) } ] }',
