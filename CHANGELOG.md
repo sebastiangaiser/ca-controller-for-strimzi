@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.5.3](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.3)
+
+[Compare to previous version](https://github.com/sebastiangaiser/ca-controller-for-strimzi/compare/v0.5.2...v0.5.3)
+
+### Bug Fixes
+
+- **deps**: update kubernetes monorepo to v0.37.2 (#245) ([09a8713](https://github.com/sebastiangaiser/ca-controller-for-strimzi/commit/09a8713dfecbd79ef5196594ba4874293035212c))
+
 ## [v0.5.2](https://github.com/sebastiangaiser/ca-controller-for-strimzi/releases/tag/v0.5.2)
 
 [Compare to previous version](https://github.com/sebastiangaiser/ca-controller-for-strimzi/compare/v0.5.1...v0.5.2)
